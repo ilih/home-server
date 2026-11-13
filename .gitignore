@@ -1,0 +1,24 @@
+# Private working notes for Claude (internal details, not for publishing)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+
+# Unredacted screenshots, if ever kept here
+screenshots/original/
+screenshots/*-original.*
+
+# Secrets, just in case
+*.env
+.env*
+*.key
+*.pem
+secrets/
+
+# OS / editor junk
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
+~$*
+.vscode/
+.idea/
