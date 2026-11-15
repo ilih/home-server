@@ -39,13 +39,23 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 **Home Assistant OS** — центр домашньої автоматизації, працює як повноцінна VM. Згодом сюди підключимо камери й домофон.
 ![Home Assistant](screenshots/home-assistant.png)
 
-**Jellyfin** — медіасервер. У контейнер прокинуто Intel Quick Sync (`/dev/dri`). Бібліотеки: `/media/movies` і `/media/tv`, з моніторингом змін у реальному часі. Перевірено: 4K HDR10 відтворюється на ТВ через **Direct Play**, Dolby Vision 8.1 — як HDR10. Детальніше: [налаштування Jellyfin, користувачі та плагіни](jellyFin/README.uk.md).
+**Jellyfin** — медіасервер. У контейнер прокинуто Intel Quick Sync (`/dev/dri`). Бібліотеки: `/media/movies` і `/media/shows`, з моніторингом змін у реальному часі. Перевірено: 4K HDR10 відтворюється на ТВ через **Direct Play**, Dolby Vision 8.1 — як HDR10. Детальніше: [налаштування Jellyfin, користувачі та плагіни](jellyFin/README.uk.md).
 ![Jellyfin](screenshots/jellyfin.png)
 
-**Samba** — файловий сервер (SMB2+). Ресурси: `media` (читання і запис) та `backups` (лише читання), користувач `media`. NetBIOS вимкнено, тому диск підключається за IP: `net use M: \\192.168.1.13\media /persistent:yes`. Команду треба виконувати в PowerShell **без** прав адміністратора.
+**Samba** — файловий сервер (SMB2+). NetBIOS вимкнено, тому ресурси підключаються за IP: `net use M: \\192.168.1.13\media /persistent:yes`. Команду треба виконувати в PowerShell **без** прав адміністратора.
+
+| Ресурс | Шлях | Доступ |
+|---|---|---|
+| `media` | `/media` | читання і запис, користувач `media` (адмін) |
+| `backups` | `/backups` | лише читання, користувач `media` |
+| `family` | `/media/family` | читання і запис, користувачі `family` і `media` |
+
+Користувач `family` бачить лише ресурс `family`: `files/` для спільних файлів і `torrents/{movies,shows}/` як скриньку для `.torrent`-файлів (див. qBittorrent). Windows не дозволяє підключитися до одного сервера під двома різними користувачами одночасно (помилка 1219), тому `family` використовуйте на інших пристроях родини.
 ![Samba](screenshots/samba.png)
 
-**qBittorrent** — торент-клієнт із вебінтерфейсом. Порт для вхідних з'єднань — 52624, UPnP вимкнено. Категорії `movies` і `tv` зберігають файли одразу в бібліотеки Jellyfin. Недокачані файли лежать у `downloads/incomplete`.
+**qBittorrent** — торент-клієнт із вебінтерфейсом. Порт для вхідних з'єднань — 52624, UPnP вимкнено. Категорії `movies` і `shows` зберігають файли одразу в бібліотеки Jellyfin. Недокачані файли лежать у `downloads/incomplete`.
+
+Скринька для родини: qBittorrent стежить за папками `family/torrents/movies` і `family/torrents/shows`. Покладений туди `.torrent`-файл додається автоматично і завантажується в `/media/movies` або `/media/shows`, після чого сам `.torrent` видаляється. Членам родини вебінтерфейс qBittorrent не потрібен.
 ![qBittorrent](screenshots/qbittorrent.png)
 
 ## 3. Сховище та права доступу
@@ -53,7 +63,8 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 ```
 /mnt/nvme-pool/                (NVMe, ext4, noatime,nofail)
 ├── media/        → /media у CT 101, 102, 103
-│   ├── movies/   tv/   downloads/{incomplete,complete}
+│   ├── movies/   shows/   downloads/{incomplete,complete}
+│   └── family/   files/   torrents/{movies,shows}
 └── backups/      → сховище Proxmox «nvme-backup»; /backups (ro) у CT 103
 ```
 
@@ -66,7 +77,7 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 
 Тому кожен сервіс може читати й змінювати файли інших.
 
-Іменування для Jellyfin: `tv/Серіал (Рік)/Season 01/Серіал S01E01.mkv`, `movies/Фільм (Рік)/Фільм (Рік).mkv`.
+Іменування для Jellyfin: `shows/Серіал (Рік)/Season 01/Серіал S01E01.mkv`, `movies/Фільм (Рік)/Фільм (Рік).mkv`.
 
 ## 4. Резервні копії
 
@@ -98,6 +109,7 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 | Клієнт | Підключення |
 |---|---|
 | Windows | `M:` → `\\192.168.1.13\media`, Jellyfin — через браузер |
+| Пристрої родини | `\\192.168.1.13\family`, користувач `family` |
 | ТВ Samsung | застосунок Jellyfin → `http://192.168.1.11:8096`, кабель |
 
 ## 7. План розвитку
@@ -116,3 +128,4 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 | 2026-11 | Початкове налаштування: Proxmox, AdGuard, HAOS, Jellyfin, Samba, qBittorrent, бекапи |
 | 2026-11-13 | Додано скріншоти |
 | 2026-11-15 | Сторінка Jellyfin: налаштування, користувачі, плагіни |
+| 2026-11-15 | Ресурс `family` і скринька для торентів; `tv` перейменовано на `shows` |

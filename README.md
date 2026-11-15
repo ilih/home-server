@@ -39,13 +39,23 @@ All containers are **unprivileged LXC** and all guests start on boot. AdGuard st
 **Home Assistant OS.** The home automation hub, running as a full VM. It is reserved for future camera and intercom integration.
 ![Home Assistant](screenshots/home-assistant.png)
 
-**Jellyfin.** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/tv`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10. Details: [Jellyfin settings, users and plugins](jellyFin/README.md).
+**Jellyfin.** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/shows`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10. Details: [Jellyfin settings, users and plugins](jellyFin/README.md).
 ![Jellyfin](screenshots/jellyfin.png)
 
-**Samba.** SMB2+ file server. Shares: `media` (read/write) and `backups` (read-only), user `media`. NetBIOS is off, so map it by IP (`net use M: \\192.168.1.13\media /persistent:yes` from a non-admin shell).
+**Samba.** SMB2+ file server. NetBIOS is off, so map shares by IP (`net use M: \\192.168.1.13\media /persistent:yes` from a non-admin shell).
+
+| Share | Path | Access |
+|---|---|---|
+| `media` | `/media` | read/write, user `media` (admin) |
+| `backups` | `/backups` | read-only, user `media` |
+| `family` | `/media/family` | read/write, users `family` and `media` |
+
+The `family` user sees only the `family` share: `files/` for shared files and `torrents/{movies,shows}/` as a drop box for `.torrent` files (see qBittorrent). Windows cannot connect to one server as two different users at once (error 1219), so use `family` on other family devices.
 ![Samba](screenshots/samba.png)
 
-**qBittorrent.** Torrent client (Web UI). Listening port 52624, UPnP off. Categories `movies` and `tv` save straight into the Jellyfin libraries; unfinished files go to `downloads/incomplete`.
+**qBittorrent.** Torrent client (Web UI). Listening port 52624, UPnP off. Categories `movies` and `shows` save straight into the Jellyfin libraries; unfinished files go to `downloads/incomplete`.
+
+Family drop box: qBittorrent watches `family/torrents/movies` and `family/torrents/shows`. A `.torrent` file dropped there is added automatically and saved to `/media/movies` or `/media/shows`; the `.torrent` file is then deleted. Family members never need the qBittorrent Web UI.
 ![qBittorrent](screenshots/qbittorrent.png)
 
 ## 3. Storage and permissions
@@ -53,7 +63,8 @@ All containers are **unprivileged LXC** and all guests start on boot. AdGuard st
 ```
 /mnt/nvme-pool/                (NVMe, ext4, noatime,nofail)
 ├── media/        → /media in CT 101, 102, 103
-│   ├── movies/   tv/   downloads/{incomplete,complete}
+│   ├── movies/   shows/   downloads/{incomplete,complete}
+│   └── family/   files/   torrents/{movies,shows}
 └── backups/      → Proxmox storage "nvme-backup"; /backups (ro) in CT 103
 ```
 
@@ -61,7 +72,7 @@ The system SSD holds `local-lvm` (LVM-thin, ~67 GB) for guest disks.
 
 Unprivileged containers map UID 1000 to host UID 101000. The media tree is `101000:101000`, mode `775`. Every service writes as `media` (qBittorrent via a systemd override with `UMask=0002`, Samba via `force user`, Jellyfin as a group member), so all services can read and write each other's files.
 
-Naming for Jellyfin: `tv/Show (Year)/Season 01/Show S01E01.mkv`, `movies/Movie (Year)/Movie (Year).mkv`.
+Naming for Jellyfin: `shows/Show (Year)/Season 01/Show S01E01.mkv`, `movies/Movie (Year)/Movie (Year).mkv`.
 
 ## 4. Backups
 
@@ -93,6 +104,7 @@ Media is not backed up because it can be re-downloaded.
 | Client | Connection |
 |---|---|
 | Windows | `M:` → `\\192.168.1.13\media`, browser → Jellyfin |
+| Family devices | `\\192.168.1.13\family`, user `family` |
 | Samsung TV | Jellyfin app → `http://192.168.1.11:8096`, wired |
 
 ## 7. Roadmap
@@ -111,3 +123,4 @@ Media is not backed up because it can be re-downloaded.
 | 2026-11 | Initial setup: Proxmox, AdGuard, HAOS, Jellyfin, Samba, qBittorrent, backups |
 | 2026-11-13 | Screenshots added |
 | 2026-11-15 | Jellyfin page: settings, users, plugins |
+| 2026-11-15 | `family` share and torrent drop box; `tv` renamed to `shows` |

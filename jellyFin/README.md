@@ -8,7 +8,7 @@ Jellyfin runs in **LXC 101** at http://192.168.1.11:8096 (version 12.4). This pa
 
 | Area | Where | Value |
 |---|---|---|
-| Libraries | Dashboard → Libraries | **Movies** → `/media/movies`, **Shows** → `/media/tv` |
+| Libraries | Dashboard → Libraries | **Movies** → `/media/movies`, **Shows** → `/media/shows` |
 | Library monitoring | Library → Manage → *Enable real-time monitoring* | on, plus a scheduled scan |
 | Hardware acceleration | Dashboard → Playback → Transcoding | **Intel Quick Sync (QSV)** |
 | Hardware decoding | same page | **H.264** and **HEVC (8-bit)** only (Skylake iGPU limit) |
@@ -18,8 +18,10 @@ Folder naming that Jellyfin recognises:
 
 ```
 movies/Movie Name (Year)/Movie Name (Year).mkv
-tv/Show Name (Year)/Season 01/Show Name S01E01.mkv
+shows/Show Name (Year)/Season 01/Show Name S01E01.mkv
 ```
+
+Changing a library folder path (e.g. `tv` → `shows`) makes Jellyfin treat the items as new, so watch progress and "played" marks for that library are reset.
 
 > 📷 **Screenshot:** `screenshots/libraries.png` — Dashboard → Libraries
 <!-- ![Libraries](screenshots/libraries.png) -->
@@ -99,3 +101,4 @@ Installation:
 | Date | Change |
 |---|---|
 | 2026-11-15 | Jellyfin page created: settings, users, Passwordless Login plugin |
+| 2026-11-15 | Shows library moved from `/media/tv` to `/media/shows` |

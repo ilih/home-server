@@ -8,7 +8,7 @@ Jellyfin працює в **LXC 101** за адресою http://192.168.1.11:809
 
 | Що | Де | Значення |
 |---|---|---|
-| Бібліотеки | Dashboard → Libraries | **Movies** → `/media/movies`, **Shows** → `/media/tv` |
+| Бібліотеки | Dashboard → Libraries | **Movies** → `/media/movies`, **Shows** → `/media/shows` |
 | Відстеження змін | бібліотека → Manage → *Enable real-time monitoring* | увімкнено, плюс сканування за розкладом |
 | Апаратне прискорення | Dashboard → Playback → Transcoding | **Intel Quick Sync (QSV)** |
 | Апаратне декодування | там само | лише **H.264** і **HEVC (8-bit)** — обмеження iGPU Skylake |
@@ -18,8 +18,10 @@ Jellyfin розпізнає таку структуру папок:
 
 ```
 movies/Назва фільму (Рік)/Назва фільму (Рік).mkv
-tv/Назва серіалу (Рік)/Season 01/Назва серіалу S01E01.mkv
+shows/Назва серіалу (Рік)/Season 01/Назва серіалу S01E01.mkv
 ```
+
+Якщо змінити шлях папки бібліотеки (наприклад, `tv` → `shows`), Jellyfin вважатиме вміст новим, тому прогрес перегляду і позначки «переглянуто» в цій бібліотеці обнуляться.
 
 > 📷 **Скріншот:** `screenshots/libraries.png` — Dashboard → Libraries
 <!-- ![Libraries](screenshots/libraries.png) -->
@@ -99,3 +101,4 @@ tv/Назва серіалу (Рік)/Season 01/Назва серіалу S01E01
 | Дата | Зміна |
 |---|---|
 | 2026-11-15 | Створено сторінку Jellyfin: налаштування, користувачі, плагін Passwordless Login |
+| 2026-11-15 | Бібліотеку Shows перенесено з `/media/tv` у `/media/shows` |
