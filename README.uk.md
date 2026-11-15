@@ -39,7 +39,7 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 **Home Assistant OS** — центр домашньої автоматизації, працює як повноцінна VM. Згодом сюди підключимо камери й домофон.
 ![Home Assistant](screenshots/home-assistant.png)
 
-**Jellyfin** — медіасервер. У контейнер прокинуто Intel Quick Sync (`/dev/dri`). Бібліотеки: `/media/movies` і `/media/tv`, з моніторингом змін у реальному часі. Перевірено: 4K HDR10 відтворюється на ТВ через **Direct Play**, Dolby Vision 8.1 — як HDR10.
+**Jellyfin** — медіасервер. У контейнер прокинуто Intel Quick Sync (`/dev/dri`). Бібліотеки: `/media/movies` і `/media/tv`, з моніторингом змін у реальному часі. Перевірено: 4K HDR10 відтворюється на ТВ через **Direct Play**, Dolby Vision 8.1 — як HDR10. Детальніше: [налаштування Jellyfin, користувачі та плагіни](jellyFin/README.uk.md).
 ![Jellyfin](screenshots/jellyfin.png)
 
 **Samba** — файловий сервер (SMB2+). Ресурси: `media` (читання і запис) та `backups` (лише читання), користувач `media`. NetBIOS вимкнено, тому диск підключається за IP: `net use M: \\192.168.1.13\media /persistent:yes`. Команду треба виконувати в PowerShell **без** прав адміністратора.
@@ -115,3 +115,4 @@ DHCP роздає адреси `192.168.1.33–152`. Сервери мають �
 |---|---|
 | 2026-11 | Початкове налаштування: Proxmox, AdGuard, HAOS, Jellyfin, Samba, qBittorrent, бекапи |
 | 2026-11-13 | Додано скріншоти |
+| 2026-11-15 | Сторінка Jellyfin: налаштування, користувачі, плагіни |

@@ -39,7 +39,7 @@ All containers are **unprivileged LXC** and all guests start on boot. AdGuard st
 **Home Assistant OS.** The home automation hub, running as a full VM. It is reserved for future camera and intercom integration.
 ![Home Assistant](screenshots/home-assistant.png)
 
-**Jellyfin.** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/tv`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10.
+**Jellyfin.** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/tv`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10. Details: [Jellyfin settings, users and plugins](jellyFin/README.md).
 ![Jellyfin](screenshots/jellyfin.png)
 
 **Samba.** SMB2+ file server. Shares: `media` (read/write) and `backups` (read-only), user `media`. NetBIOS is off, so map it by IP (`net use M: \\192.168.1.13\media /persistent:yes` from a non-admin shell).
@@ -110,3 +110,4 @@ Media is not backed up because it can be re-downloaded.
 |---|---|
 | 2026-11 | Initial setup: Proxmox, AdGuard, HAOS, Jellyfin, Samba, qBittorrent, backups |
 | 2026-11-13 | Screenshots added |
+| 2026-11-15 | Jellyfin page: settings, users, plugins |
