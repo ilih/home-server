@@ -39,10 +39,10 @@ All containers are **unprivileged LXC** and all guests start on boot. AdGuard st
 **Home Assistant OS.** The home automation hub, running as a full VM. It is reserved for future camera and intercom integration.
 ![Home Assistant](screenshots/home-assistant.png)
 
-**Jellyfin.** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/shows`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10. Details: [Jellyfin settings, users and plugins](jellyFin/README.md).
+**[Jellyfin](jellyFin/README.md).** The media server, with Intel Quick Sync passed through (`/dev/dri`). Libraries are `/media/movies` and `/media/shows`, with real-time monitoring. Verified: 4K HDR10 **Direct Play** on the TV, and Dolby Vision 8.1 plays as HDR10. Details: [Jellyfin settings, users and plugins](jellyFin/README.md).
 ![Jellyfin](screenshots/jellyfin.png)
 
-**Samba.** SMB2+ file server. NetBIOS is off, so map shares by IP (`net use M: \\192.168.1.13\media /persistent:yes` from a non-admin shell).
+**[Samba](samba/README.md).** SMB2+ file server. NetBIOS is off, so map shares by IP (`net use M: \\192.168.1.13\media /persistent:yes` from a non-admin shell).
 
 | Share | Path | Access |
 |---|---|---|
@@ -50,7 +50,7 @@ All containers are **unprivileged LXC** and all guests start on boot. AdGuard st
 | `backups` | `/backups` | read-only, user `media` |
 | `family` | `/media/family` | read/write, users `family` and `media` |
 
-The `family` user sees only the `family` share: `files/` for shared files and `torrents/{movies,shows}/` as a drop box for `.torrent` files (see qBittorrent). Windows cannot connect to one server as two different users at once (error 1219), so use `family` on other family devices.
+The `family` user sees only the `family` share: `files/` for shared files and `torrents/{movies,shows}/` as a drop box for `.torrent` files (see qBittorrent). Windows cannot connect to one server as two different users at once (error 1219), so use `family` on other family devices. Details: [Samba shares, users and folder structure](samba/README.md).
 ![Samba](screenshots/samba.png)
 
 **qBittorrent.** Torrent client (Web UI). Listening port 52624, UPnP off. Categories `movies` and `shows` save straight into the Jellyfin libraries; unfinished files go to `downloads/incomplete`.
@@ -124,3 +124,4 @@ Media is not backed up because it can be re-downloaded.
 | 2026-11-13 | Screenshots added |
 | 2026-11-15 | Jellyfin page: settings, users, plugins |
 | 2026-11-15 | `family` share and torrent drop box; `tv` renamed to `shows` |
+| 2026-11-16 | Samba page: shares, folder structure, users |
