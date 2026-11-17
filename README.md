@@ -4,14 +4,14 @@
 
 A small home server on **Proxmox VE**. It provides media streaming, file sharing, torrent downloads, network-wide ad blocking, and home automation.
 
-> Status: in production · Updated: 2026-11-12 · This is a living document; new services will be added (see [Roadmap](#7-roadmap)).
+> Status: in production · Updated: 2026-11-17 · This is a living document; new services will be added (see [Roadmap](#7-roadmap)).
 
 ## 1. Hardware and network
 
 | Component | Value |
 |---|---|
 | Server | HP EliteDesk 800 G2 Mini: i5-6500T (Skylake, HD 530), 12 GB RAM |
-| Disks | 128 GB SATA SSD for the system and VM/CT disks; 1 TB NVMe for media and backups |
+| Disks | 128 GB SATA SSD for the system and VM/CT disks; 1 TB NVMe for media and backups; 64 GB USB flash drive for a second copy of backups |
 | Hypervisor | Proxmox VE 9.2 (Debian 13), `no-subscription` repo |
 | Router | Keenetic Hero, LAN `192.168.1.0/24`, domain `zelena.home`, WAN PPPoE behind CGNAT, WAN IPv6 off |
 | Clients | Windows PC, Samsung QE65QN85D TV (wired) |
@@ -66,6 +66,10 @@ Family drop box: qBittorrent watches `family/torrents/movies` and `family/torren
 │   ├── movies/   shows/   downloads/{incomplete,complete}
 │   └── family/   files/   torrents/{movies,shows}
 └── backups/      → Proxmox storage "nvme-backup"; /backups (ro) in CT 103
+
+/mnt/usb-backup/               (USB flash, ext4, noatime,nofail)
+├── dump/         → Proxmox storage "usb-backup"
+└── host-config/  copies of the weekly host config archives
 ```
 
 The system SSD holds `local-lvm` (LVM-thin, ~67 GB) for guest disks.
@@ -79,7 +83,13 @@ Naming for Jellyfin: `shows/Show (Year)/Season 01/Show S01E01.mkv`, `movies/Movi
 | What | Schedule | Retention |
 |---|---|---|
 | All VMs/CTs (vzdump, snapshot, zstd) → `nvme-backup` | daily 03:00 | 7 daily / 4 weekly / 3 monthly |
-| Host config (`/etc/pve`, network, fstab, …) tar.gz | weekly | 60 days |
+| All VMs/CTs → `usb-backup` (USB flash) | Sundays 04:00 | 4 weekly / 3 monthly |
+| Host config (`/etc/pve`, network, fstab, …) tar.gz → NVMe | weekly | 60 days |
+| Copy of the host config archives → USB flash | weekly, right after the NVMe one | 180 days |
+
+One full set of guest backups is about 3.7 GB, so the USB drive holds the whole history with room to spare. The USB storage is marked `is_mountpoint`: if the drive is unplugged, the job fails instead of filling the system disk, and the server boots fine without it (`nofail`).
+
+To restore: **Datacenter → `nvme-backup` or `usb-backup` → Backups → Restore**.
 
 Media is not backed up because it can be re-downloaded.
 
@@ -87,7 +97,8 @@ Media is not backed up because it can be re-downloaded.
 
 ## 5. Potential issues
 
-- **Single NVMe, no redundancy.** Media and backups share one disk; if it fails, both are gone. Copy `backups/` off the server regularly.
+- **Single NVMe, no redundancy.** Media and the daily backups share one disk. If it fails, the media is gone, and the guests can be restored only from the weekly USB copy (up to a week old).
+- **USB copy sits in the same box.** It does not protect against theft, fire or a power surge, and flash drives wear out. Take the drive offsite from time to time, and replace it if backup tasks show write errors.
 - **NVMe not mounted.** Because of `nofail`, the host still boots, but the containers see an empty `/media` and backups fail. Check `mountpoint /mnt/nvme-pool`.
 - **DNS single point of failure.** If CT 104 is down, the LAN has no DNS. Rollback on Keenetic: `no ip name-server 192.168.1.10`, set DHCP DNS back to the router. Re-enabling WAN IPv6 lets clients bypass AdGuard.
 - **Transcoding limits (Skylake).** There is no hardware decoding for HEVC 10-bit or AV1. 4K HDR transcoding falls back to the CPU and stutters, so keep to Direct Play. Image subtitles (PGS) force transcoding; prefer SRT.
@@ -114,7 +125,7 @@ Media is not backed up because it can be re-downloaded.
 | Remote access from phone | CGNAT rules out port forwarding, so use an overlay VPN (e.g. Tailscale) in a small LXC |
 | Photo storage | Self-hosted photo backup (e.g. Immich) on the NVMe, with its own backup copy |
 | Cameras / intercom | Hikvision + Dahua cameras and the intercom via Home Assistant |
-| Offsite backups | Automatic copy of `backups/` to an external disk or the cloud |
+| Offsite backups | The USB copy exists; still missing a copy outside the house (cloud or a disk kept elsewhere) |
 
 ## Changelog
 
@@ -125,3 +136,4 @@ Media is not backed up because it can be re-downloaded.
 | 2026-11-15 | Jellyfin page: settings, users, plugins |
 | 2026-11-15 | `family` share and torrent drop box; `tv` renamed to `shows` |
 | 2026-11-16 | Samba page: shares, folder structure, users |
+| 2026-11-17 | Weekly second copy of backups on a USB flash drive |
